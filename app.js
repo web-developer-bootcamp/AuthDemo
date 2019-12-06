@@ -7,7 +7,7 @@ var express = require('express'),
     User = require('./models/user');
 
 //db connection
-mongoose.connect('mongodb://localhost/auth_demo_app', {useNewUrlParser: true});
+mongoose.connect('mongodb://localhost:27017/auth_demo_app', { useNewUrlParser: true });
 var app = express();
 
 //passport session
@@ -17,6 +17,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(require('express-session')({
     secret: 'Rusty is the best and cutest dog in the world',
@@ -32,6 +33,29 @@ app.get('', function (req, res) {
 //secret page rendering
 app.get('/secret', function (req, res) {
     res.render('secret');
+});
+
+//register page rendering
+app.get('/register', function (req, res) {
+    res.render('register');
+});
+
+//register post method
+app.post('/register', function (req, res) {
+    //var user = req.body.username;
+    //var pwd = req.body.password;
+
+    User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
+        if (err) {
+            console.log(err);
+            return res.render('register');
+        }
+
+        //passport init
+        passport.authenticate('google')(req, res,function(){
+            res.redirect('/secret');
+        });
+    });
 });
 
 //collemaneto server port
