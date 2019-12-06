@@ -13,6 +13,7 @@ var app = express();
 //passport session
 app.use(passport.initialize());
 app.use(passport.session());
+passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
@@ -44,7 +45,6 @@ app.get('/register', function (req, res) {
 app.post('/register', function (req, res) {
     //var user = req.body.username;
     //var pwd = req.body.password;
-
     User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
         if (err) {
             console.log(err);
@@ -52,10 +52,23 @@ app.post('/register', function (req, res) {
         }
 
         //passport init
-        passport.authenticate('google')(req, res,function(){
+        passport.authenticate('local')(req, res, function() {
             res.redirect('/secret');
         });
     });
+});
+
+//login routes
+app.get('/login', function (req, res) {
+    res.render('login');
+});
+
+//login logic
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/secret',
+    failureRedirect: '/login'
+}), function (req, res) {
+
 });
 
 //collemaneto server port
